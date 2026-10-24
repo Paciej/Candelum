@@ -78,19 +78,3 @@ fun LampScreen(
         }
     }
 }
-
-@Preview
-@Composable
-fun lampPreview() {
-    val vm: LampViewModel = viewModel()
-    val state by vm.state.collectAsState()
-        LampScreen(
-            state = state,
-            onConnect = vm::connect,
-            onDisconnect = vm::disconnect,
-            onPower = vm::setPower,
-            onColor = vm::setColor,
-            onMode = vm::setMode,
-            modifier = Modifier
-        )
-}
