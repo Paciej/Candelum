@@ -10,12 +10,13 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import java.util.UUID
+import java.util.concurrent.atomic.AtomicBoolean
 
 enum class ConnectionStatus { Disconnected, Connecting, Connected }
 
 data class IncomingMessage(val topic: String, val payload: String)
 
-class MqttConnection(private val settings: MqttSettings, private val subscribeFilter: String) {
+class MqttConnection(private val settings: MqttSettings, private val subscribeFilters: List<String>) {
     private val tag = "MqttConnection"
     private val _status = MutableStateFlow(ConnectionStatus.Disconnected)
     val status: StateFlow<ConnectionStatus> = _status
@@ -23,17 +24,31 @@ class MqttConnection(private val settings: MqttSettings, private val subscribeFi
     private val _messages = MutableSharedFlow<IncomingMessage>(extraBufferCapacity = 64)
     val messages: SharedFlow<IncomingMessage> = _messages
 
+    private val stopReconnect = AtomicBoolean(true)
+
     private val client: Mqtt3AsyncClient = MqttClient.builder()
         .useMqttVersion3()
         .identifier("candelum-app" + UUID.randomUUID())
         .serverHost(settings.host)
         .serverPort(settings.port)
+        .simpleAuth()
+            .username(settings.username)
+            .password(settings.password.toByteArray())
+            .applySimpleAuth()
         .automaticReconnectWithDefaultConfig()
         .addConnectedListener {
             _status.value = ConnectionStatus.Connected
-            subscribeToStatus()
+            subscribeAll()
         }
-        .addDisconnectedListener { _status.value = ConnectionStatus.Disconnected }
+        .addDisconnectedListener { ctx ->
+            Log.w(tag, "Disconnected, source=${ctx.source}, cause=${ctx.cause}")
+            if (stopReconnect.get()) {
+                ctx.reconnector.reconnect(false)
+                _status.value = ConnectionStatus.Disconnected
+            } else {
+                _status.value = ConnectionStatus.Connecting
+            }
+        }
         .buildAsync()
 
     init {
@@ -46,23 +61,26 @@ class MqttConnection(private val settings: MqttSettings, private val subscribeFi
 
     fun connect() {
         if (_status.value != ConnectionStatus.Disconnected) return
+        stopReconnect.set(false)
         _status.value = ConnectionStatus.Connecting
         client.connectWith()
-            .simpleAuth()
-            .username(settings.username)
-            .password(settings.password.toByteArray())
-            .applySimpleAuth()
             .keepAlive(30)
             .send()
             .whenComplete { ack, error ->
-                if (error != null) Log.e(tag, "Subscription failed: ${error.message}", error)
-                else Log.d(tag, "Subscribed $subscribeFilter, code: ${ack.returnCode }")
+                if (error != null) {
+                    Log.e(tag, "Connect failed: ${error.message}", error)
+                    stopReconnect.set(true)
+                }
+                else Log.d(tag, "Connected, code: ${ack.returnCode}")
             }
     }
 
     fun disconnect() {
-        client.disconnect()
-        _status.value = ConnectionStatus.Disconnected
+        stopReconnect.set(true)
+        client.disconnect().whenComplete { _, e ->
+            if (e != null) Log.w(tag, "Disconnect: ${e.message}")
+            _status.value = ConnectionStatus.Disconnected
+        }
     }
 
     fun publish(topic: String, payload: String) {
@@ -81,14 +99,16 @@ class MqttConnection(private val settings: MqttSettings, private val subscribeFi
             }
     }
 
-    private fun subscribeToStatus() {
-        client.subscribeWith()
-            .topicFilter(subscribeFilter)
-            .qos(MqttQos.AT_LEAST_ONCE)
-            .send()
-            .whenComplete { _, error ->
-                if (error != null) Log.e(tag, "Subscription unavailable: ${error.message}", error)
-                else Log.d(tag, "Subscribed $subscribeFilter")
-            }
+    private fun subscribeAll() {
+        subscribeFilters.forEach { filter ->
+            client.subscribeWith()
+                .topicFilter(filter)
+                .qos(MqttQos.AT_LEAST_ONCE)
+                .send()
+                .whenComplete { _, error ->
+                    if (error != null) Log.e(tag, "Subscribe $filter failed: ${error.message}", error)
+                    else Log.d(tag, "Subscribed to $filter")
+                }
+        }
     }
 }
