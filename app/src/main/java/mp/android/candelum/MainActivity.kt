@@ -1,6 +1,5 @@
 package mp.android.candelum
 
-import android.icu.text.CaseMap
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -9,13 +8,9 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -23,15 +18,15 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.modifier.modifierLocalConsumer
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import mp.android.candelum.lamp.LampViewModel
 import mp.android.candelum.ui.lamp.LampScreen
+import mp.android.candelum.ui.lights.LightsScreen
+import mp.android.candelum.ui.lights.LightsViewModel
 import mp.android.candelum.ui.theme.CandelumTheme
 
 class MainActivity : ComponentActivity() {
@@ -40,16 +35,16 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             CandelumTheme {
-                val vm: LampViewModel = viewModel()
-                val state by vm.state.collectAsState()
+                val vm: LightsViewModel = viewModel()
+                val connection by vm.connectionStatus.collectAsState()
+                val lights by vm.lights.collectAsState()
                 Scaffold { padding ->
-                    LampScreen(
-                        state = state,
+                    LightsScreen(
+                        connection = connection,
+                        lights = lights,
                         onConnect = vm::connect,
                         onDisconnect = vm::disconnect,
-                        onPower = vm::setPower,
-                        onColor = vm::setColor,
-                        onMode = vm::setMode,
+                        onCommand = vm::send,
                         modifier = Modifier.padding(padding),
                     )
                 }
