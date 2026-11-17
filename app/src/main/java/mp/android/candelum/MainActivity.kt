@@ -24,6 +24,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import mp.android.candelum.ui.app.CandelumApp
 import mp.android.candelum.ui.lights.LightsScreen
 import mp.android.candelum.ui.lights.LightsViewModel
 import mp.android.candelum.ui.theme.CandelumTheme
@@ -34,19 +35,8 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             CandelumTheme {
-                val vm: LightsViewModel = viewModel()
-                val connection by vm.connectionStatus.collectAsState()
-                val lights by vm.lights.collectAsState()
-                Scaffold { padding ->
-                    LightsScreen(
-                        connection = connection,
-                        lights = lights,
-                        onConnect = vm::connect,
-                        onDisconnect = vm::disconnect,
-                        onCommand = vm::send,
-                        modifier = Modifier.padding(padding),
-                    )
-                }
+                val vm: LightsViewModel = viewModel(factory = LightsViewModel.Factory)
+                CandelumApp(viewModel = vm)
             }
         }
     }
