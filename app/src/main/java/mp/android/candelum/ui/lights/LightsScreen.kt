@@ -11,6 +11,7 @@ import mp.android.candelum.light.Light
 import mp.android.candelum.light.LightCommand
 import mp.android.candelum.light.LightTarget
 import mp.android.candelum.mqtt.ConnectionStatus
+import mp.android.candelum.ui.lights.LightControls
 
 @Composable
 fun LightsScreen(
@@ -44,21 +45,8 @@ private fun LightCard(light: Light, onCommand: (LightTarget, LightCommand) -> Un
     Card(modifier = Modifier.fillMaxWidth()) {
         Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
             Text(light.id, style = MaterialTheme.typography.titleSmall)
-            Text("Online: ${light.online ?: "unknown"}   Power: ${light.power ?: "unknown"}")
-            Text("Color: ${light.color?.toPayload() ?: "-"}   Brightness: ${light.brightness ?: "-"}")
-            Text("Mode: ${light.mode ?: "-"}   Temperature: ${light.temperature ?: "-"}")
             Text("Firmware: ${light.firmware ?: "-"}")
-            val caps = light.capabilities
-            Text(
-                if (caps == null) "Capabilities: waiting for info"
-                else "Capabilities: color=${caps.color}, brightness=${caps.brightness}, " +
-                        "modes=${caps.modes}, temperature=${caps.temperature}"
-            )
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Button(onClick = { onCommand(target, LightCommand.Power(true)) }) { Text("ON") }
-                OutlinedButton(onClick = { onCommand(target, LightCommand.Power(false)) }) { Text("OFF") }
-                OutlinedButton(onClick = { onCommand(target, LightCommand.Identify) }) { Text("Identify") }
-            }
+            LightControls(light = light, onCommand = onCommand)
         }
     }
 }
