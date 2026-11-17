@@ -10,5 +10,5 @@ data class Light(
     val brightness: Int? = null,
     val mode: String? = null,
     val temperature: String? = null,
-    val message: Map<String, String> = emptyMap()
+    val messages: Map<String, String> = emptyMap()
 )

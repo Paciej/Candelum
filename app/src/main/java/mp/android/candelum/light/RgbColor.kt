@@ -1,4 +1,4 @@
-package mp.android.candelum.lamp
+package mp.android.candelum.light
 
 data class RgbColor(val r: Int, val g: Int, val b: Int) {
     init {

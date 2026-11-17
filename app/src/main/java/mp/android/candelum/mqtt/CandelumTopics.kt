@@ -34,7 +34,8 @@ object CandelumTopics {
             else -> null
         }
     }
-}sealed interface ParsedTopic {
+}
+sealed interface ParsedTopic {
     data class Info(val deviceId: String) : ParsedTopic
     data class Status(val deviceId: String, val field: String, val isMessage: Boolean) : ParsedTopic
 }
