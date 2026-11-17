@@ -15,5 +15,5 @@ class AppContainer {
         subscribeFilters = CandelumTopics.SUBSCRIPTIONS
     )
 
-    public val home = HomeRepository(connection, appScope)
+    val home = HomeRepository(connection, appScope)
 }

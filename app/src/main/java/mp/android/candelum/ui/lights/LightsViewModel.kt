@@ -13,9 +13,6 @@ import mp.android.candelum.CandelumApp
 import mp.android.candelum.home.HomeRepository
 import mp.android.candelum.light.LightCommand
 import mp.android.candelum.light.LightTarget
-import mp.android.candelum.mqtt.MqttConnection
-import mp.android.candelum.mqtt.MqttSettings
-import mp.android.candelum.mqtt.CandelumTopics
 
 class LightsViewModel(private val home: HomeRepository) : ViewModel() {
 
