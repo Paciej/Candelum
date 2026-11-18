@@ -83,7 +83,7 @@ class MqttConnection(private val settings: MqttSettings, private val subscribeFi
         }
     }
 
-    fun publish(topic: String, payload: String) {
+    fun publish(topic: String, payload: String, retain: Boolean = false) {
         if (_status.value != ConnectionStatus.Connected) {
             Log.w(tag, "Skipped publish on $topic - No connection")
             return
@@ -92,6 +92,7 @@ class MqttConnection(private val settings: MqttSettings, private val subscribeFi
             .topic(topic)
             .payload(payload.toByteArray())
             .qos(MqttQos.AT_LEAST_ONCE)
+            .retain(retain)
             .send()
             .whenComplete { _, error ->
                 if (error != null) Log.e(tag, "Publish $topic unsuccessfully: ${error.message}", error)

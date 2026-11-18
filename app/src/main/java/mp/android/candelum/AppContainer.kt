@@ -12,7 +12,7 @@ class AppContainer {
     private val appScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
     private val connection = MqttConnection(
         settings = MqttSettings.fromBuildConfig(),
-        subscribeFilters = CandelumTopics.SUBSCRIPTIONS
+        subscribeFilters = CandelumTopics.SUBSCRIPTIONS + HomeRepository.LAYOUT_TOPIC
     )
 
     val home = HomeRepository(connection, appScope)
