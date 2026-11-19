@@ -84,7 +84,13 @@ fun CandelumApp(viewModel: AppViewModel) {
                 }
             }
             composable(Routes.MANAGE_ROOMS) {
-
+                ManageRoomsScreen(
+                    rooms = rooms,
+                    onBack = { navController.popBackStack() },
+                    onCreate = viewModel::createRoom,
+                    onRename = viewModel::renameRoom,
+                    onDelete = viewModel::deleteRoom,
+                )
             }
         }
     }
