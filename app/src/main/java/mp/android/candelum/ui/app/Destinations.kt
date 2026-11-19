@@ -14,4 +14,5 @@ enum class MainTab(val route: String, val label: String, val icon: ImageVector) 
 
 object Routes {
     const val SETTINGS = "settings"
+    const val MANAGE_ROOMS = "manage_rooms"
 }

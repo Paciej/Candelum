@@ -10,6 +10,9 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
@@ -28,14 +31,18 @@ fun CandelumApp(viewModel: AppViewModel) {
 
     val connection by viewModel.connection.collectAsState()
     val lights by viewModel.visibleLights.collectAsState()
+    val rooms by viewModel.rooms.collectAsState()
+    val selected by viewModel.selected.collectAsState()
+    val title by viewModel.title.collectAsState()
+    var showSelector by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
             if (showBars) {
                 CandelumTopBar(
-                    title = "Home",
+                    title = title,
                     connection = connection,
-                    onTitleClick = {},
+                    onTitleClick = { showSelector = true },
                     onSettingsClick = { navController.navigate(Routes.SETTINGS)},
                 )
             }
@@ -76,6 +83,19 @@ fun CandelumApp(viewModel: AppViewModel) {
                     PlaceholderScreen("Settings")
                 }
             }
+            composable(Routes.MANAGE_ROOMS) {
+
+            }
         }
+    }
+
+    if (showSelector) {
+       SpaceSelectorSheet(
+           rooms = rooms,
+           selected = selected,
+           onSelect = { viewModel.select(it); showSelector = false },
+           onManage = { showSelector = false; navController.navigate(Routes.MANAGE_ROOMS)},
+           onDismiss = { showSelector = false }
+       )
     }
 }
