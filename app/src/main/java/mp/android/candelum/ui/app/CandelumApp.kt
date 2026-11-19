@@ -20,14 +20,14 @@ import mp.android.candelum.ui.lights.LightsScreen
 import mp.android.candelum.ui.lights.LightsViewModel
 
 @Composable
-fun CandelumApp(viewModel: LightsViewModel) {
+fun CandelumApp(viewModel: AppViewModel) {
     val navController = rememberNavController()
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = backStackEntry?.destination?.route
     val showBars = MainTab.entries.any { it.route == currentRoute }
 
-    val connection by viewModel.connectionStatus.collectAsState()
-    val lights by viewModel.lights.collectAsState()
+    val connection by viewModel.connection.collectAsState()
+    val lights by viewModel.visibleLights.collectAsState()
 
     Scaffold(
         topBar = {
