@@ -25,6 +25,11 @@ class AppViewModel(private val home: HomeRepository) : ViewModel() {
     private val requested = MutableStateFlow<Scope>(Scope.Home)
 
     val connection = home.connectionStatus
+    val overview = home.overview
+
+    val names: StateFlow<Map<String, String>> = home.layout
+        .map { layout -> layout.devices.associate { it.id to it.name } }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyMap())
 
     val rooms: StateFlow<List<Room>> = home.layout
         .map { it.rooms }
@@ -54,6 +59,7 @@ class AppViewModel(private val home: HomeRepository) : ViewModel() {
     fun disconnect() = home.disconnect()
     fun send(target: LightTarget, command: LightCommand) = home.send(target, command)
     fun sendToScope(command: LightCommand) = home.send(selected.value.toTarget(), command)
+    fun assignLight(lightId: String, roomId: String?): Boolean = home.assignLight(lightId, roomId)
 
     fun createRoom(name: String): Boolean = home.createRoom(name) != null
     fun renameRoom(id: String, name: String): Boolean = home.renameRoom(id, name)

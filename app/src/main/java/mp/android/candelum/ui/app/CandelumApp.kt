@@ -19,6 +19,11 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import mp.android.candelum.home.Scope
+import mp.android.candelum.light.Light
+import mp.android.candelum.light.LightCommand
+import mp.android.candelum.light.LightTarget
+import mp.android.candelum.ui.home.HomeOverviewScreen
 import mp.android.candelum.ui.lights.LightsScreen
 
 @Composable
@@ -33,6 +38,10 @@ fun CandelumApp(viewModel: AppViewModel) {
     val rooms by viewModel.rooms.collectAsState()
     val selected by viewModel.selected.collectAsState()
     val title by viewModel.title.collectAsState()
+    val overview by viewModel.overview.collectAsState()
+    val names by viewModel.names.collectAsState()
+    var assigning by remember { mutableStateOf<Light?>(null) }
+    var error by remember { mutableStateOf<String?>(null) }
     var showSelector by remember { mutableStateOf(false) }
 
     Scaffold(
@@ -64,13 +73,27 @@ fun CandelumApp(viewModel: AppViewModel) {
             modifier = Modifier.padding(padding),
         ) {
             composable(MainTab.Control.route) {
-                LightsScreen(
-                    connection = connection,
-                    lights = lights,
-                    viewModel::connect,
-                    viewModel::disconnect,
-                    viewModel::send
-                )
+                if (selected == Scope.Home) {
+                    HomeOverviewScreen(
+                        overview = overview,
+                        names = names,
+                        onToggleLight = { light ->
+                            viewModel.send(LightTarget.Device(light.id), LightCommand.Power(light.power == true))
+                        },
+                        onAssign = { assigning = it },
+                        onHomePower = { on -> viewModel.sendToScope(LightCommand.Power(on)) },
+                        onManageRooms = { navController.navigate(Routes.MANAGE_ROOMS) },
+                    )
+                } else {
+                    // Temporary: room screen with tiles comes with the light detail screen.
+                    LightsScreen(
+                        connection = connection,
+                        lights = lights,
+                        onConnect = viewModel::connect,
+                        onDisconnect = viewModel::disconnect,
+                        onCommand = viewModel::send,
+                    )
+                }
             }
             composable(MainTab.Modes.route) { PlaceholderScreen("Modes") }
             composable(MainTab.Automations.route) { PlaceholderScreen("Automations") }
