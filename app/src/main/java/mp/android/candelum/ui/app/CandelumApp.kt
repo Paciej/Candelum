@@ -20,7 +20,6 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import mp.android.candelum.ui.lights.LightsScreen
-import mp.android.candelum.ui.lights.LightsViewModel
 
 @Composable
 fun CandelumApp(viewModel: AppViewModel) {

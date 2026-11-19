@@ -23,7 +23,6 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import mp.android.candelum.ui.app.AppViewModel
 import mp.android.candelum.ui.app.CandelumApp
-import mp.android.candelum.ui.lights.LightsViewModel
 import mp.android.candelum.ui.theme.CandelumTheme
 
 class MainActivity : ComponentActivity() {
