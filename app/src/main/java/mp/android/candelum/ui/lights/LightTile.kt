@@ -37,14 +37,14 @@ fun LightTile(
         MaterialTheme.colorScheme.surfaceVariant
     }
     val status = when {
-        light.online!! -> "Offline"
+        light.online == true -> "Offline"
         light.power == true -> "On"
         else -> "Off"
     }
     Card(
         modifier = modifier
             .width(120.dp)
-            .alpha(if (light.online) 1f else 0.5f)
+            .alpha(if (light.online == true) 1f else 0.5f)
             .combinedClickable(onClick = onClick, onLongClick = onLongClick),
     ) {
         Column(modifier = Modifier.padding(12.dp)) {

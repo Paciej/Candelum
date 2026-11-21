@@ -1,5 +1,6 @@
 package mp.android.candelum.ui.app
 
+import android.util.Log
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
@@ -23,8 +24,10 @@ import mp.android.candelum.home.Scope
 import mp.android.candelum.light.Light
 import mp.android.candelum.light.LightCommand
 import mp.android.candelum.light.LightTarget
+import mp.android.candelum.ui.home.AssignRoomSheet
 import mp.android.candelum.ui.home.HomeOverviewScreen
 import mp.android.candelum.ui.lights.LightsScreen
+import mp.android.candelum.ui.lights.displayName
 
 @Composable
 fun CandelumApp(viewModel: AppViewModel) {
@@ -125,5 +128,22 @@ fun CandelumApp(viewModel: AppViewModel) {
            onManage = { showSelector = false; navController.navigate(Routes.MANAGE_ROOMS)},
            onDismiss = { showSelector = false }
        )
+    }
+
+    assigning?.let { light ->
+        val currentRoomId = overview.rooms
+            .firstOrNull { entry -> entry.lights.any { it.id == light.id } }?.room?.id
+        AssignRoomSheet(
+            lightLabel = displayName(light.id, names),
+            rooms = rooms,
+            currentRoomId = currentRoomId,
+            onAssign = { roomId ->
+                val ok = viewModel.assignLight(light.id, roomId)
+                error = if (ok) null else "Not connected to the broker - change not saved."
+                assigning = null
+            },
+            onManageRooms = { assigning = null; navController.navigate(Routes.MANAGE_ROOMS) },
+            onDismiss = { assigning = null },
+        )
     }
 }
